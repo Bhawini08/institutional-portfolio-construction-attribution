@@ -1,13 +1,15 @@
+import argparse
 import json
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from portfolio.data import synthetic_returns, benchmark_weights, SECTORS
+from portfolio.data import synthetic_returns, live_returns, benchmark_weights, SECTORS
 from portfolio.optimization import *
 from portfolio.risk import *
 from portfolio.attribution import brinson_fachler
+parser=argparse.ArgumentParser(); parser.add_argument("--mode",choices=["synthetic","live"],default="synthetic"); args=parser.parse_args()
 out=Path("results"); out.mkdir(exist_ok=True)
-r=synthetic_returns(); mu=expected_returns(r); cov=ledoit_wolf_cov(r); bench=benchmark_weights().reindex(r.columns).fillna(0)
+r=synthetic_returns() if args.mode=="synthetic" else live_returns(); mu=expected_returns(r); cov=ledoit_wolf_cov(r); bench=benchmark_weights().reindex(r.columns).fillna(0)
 cfg=Constraints(max_weight=0.30,benchmark_active_limit=0.20,tracking_error_limit=0.15,sector_limits={"Technology":0.25})
 weights={
 "min_variance":optimize(mu,cov,"min_variance",cfg=cfg,bench=bench,sectors=SECTORS),
