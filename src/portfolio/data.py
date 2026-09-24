@@ -17,3 +17,17 @@ def benchmark_weights():
     w=pd.Series(0.0,index=ASSETS)
     w.loc[["SPY","QQQ","IWM","IWD","IWF"]]=[0.40,0.15,0.10,0.15,0.20]
     return w/w.sum()
+
+
+def live_returns(tickers=None,start="2015-01-01",end=None):
+    """Download adjusted daily returns for the live validation pass."""
+    import yfinance as yf
+    tickers=tickers or ASSETS
+    raw=yf.download(tickers,start=start,end=end,auto_adjust=True,progress=False,threads=False)
+    if raw.empty: raise RuntimeError("Yahoo Finance returned no data")
+    if isinstance(raw.columns,pd.MultiIndex):
+        px=raw["Close"] if "Close" in raw.columns.get_level_values(0) else raw.xs("Close",axis=1,level=1)
+    else:
+        px=raw[["Close"]].copy(); px.columns=[tickers[0]]
+    px.columns=[str(c).upper() for c in px.columns]
+    return px.pct_change(fill_method=None).dropna(how="any")
