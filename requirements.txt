@@ -5,3 +5,4 @@ scikit-learn>=1.5
 matplotlib>=3.9
 streamlit>=1.38
 pytest>=8.0
+yfinance>=0.2.54
